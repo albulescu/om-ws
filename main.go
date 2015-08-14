@@ -1,12 +1,9 @@
 package main
 
 import (
-	"flag"
 	"log"
 	"net/http"
 )
-
-var addr = flag.String("addr", ":9998", "http service address")
 
 func main() {
 
@@ -15,7 +12,7 @@ func main() {
 
 	go h.run()
 
-	http.HandleFunc("/ws", serveWs)
+	http.HandleFunc("/", serveWs)
 	log.Print("Listen on ", config.BindAddress)
 	err := http.ListenAndServe(config.BindAddress, nil)
 	if err != nil {

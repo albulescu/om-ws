@@ -35,6 +35,8 @@ type connection struct {
 
 	// Buffered channel of outbound messages.
 	send chan []byte
+
+	sendBinary chan []byte
 }
 
 func checkOrigin(r *http.Request) bool {
@@ -82,6 +84,8 @@ func (c *connection) readPump() {
 		if err != nil {
 			break
 		}
+		//validate
+		//build the packet
 		h.broadcast <- message
 	}
 }
@@ -109,6 +113,14 @@ func (c *connection) writePump() {
 			if err := c.write(websocket.TextMessage, message); err != nil {
 				return
 			}
+		case bytes, ok := <-c.sendBinary:
+			if !ok {
+				c.write(websocket.CloseMessage, []byte{})
+				return
+			}
+			if err := c.write(websocket.BinaryMessage, bytes); err != nil {
+				return
+			}
 		case <-ticker.C:
 			if err := c.write(websocket.PingMessage, []byte{}); err != nil {
 				return
@@ -130,8 +142,11 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
-	c := &connection{send: make(chan []byte, 256), ws: ws}
+	c := &connection{send: make(chan []byte, 256), ws: ws, sendBinary: make(chan []byte, 256)}
 	h.register <- c
+
+	go ActionPing(c)
+
 	go c.writePump()
 	c.readPump()
 }

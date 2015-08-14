@@ -8,7 +8,7 @@ Full packet
 [                     Header                       ] [         body         ]
 ["om"][version:uint8][action:uint8][bodysize:uint32] [....:map[string]string]
 ```
-Body packet - Key value pairs separated by separator
+Body packet - Key value pairs separated by [0xc0,0x80]
 ```
 [key:string][0xc0,0x80][value:string][0xc0,0x80]
 ```

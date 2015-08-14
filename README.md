@@ -1,4 +1,7 @@
 # GoLang WebSocket with with binary communication with javascript
+## Installation
+make install
+make run
 ## Communication protocol
 Full packet
 ```

@@ -7,20 +7,6 @@
 <body>
 <script type="text/javascript">
 
-    DataView.prototype.getUTF8String = function(offset, length) {
-        var utf16 = new ArrayBuffer(length * 2);
-        var utf16View = new Uint16Array(utf16);
-        for (var i = 0; i < length; ++i) {
-            utf16View[i] = this.getUint8(offset + i);
-        }
-        return String.fromCharCode.apply(null, utf16View);
-    };
-    function s(code) {
-        return String.fromCharCode.apply(null, [code]);
-    }
-
-
-
     function decodePacket( buffer /*ArrayBuffer*/ ) {
 
         var readString = function(dv, offset, length) {

@@ -13,6 +13,9 @@ type Configuration struct {
 
 	// Allowed origins
 	Origins []string `ini:"origins"`
+
+	// Allowed ips
+	Allow []string `ini:"allow"`
 }
 
 var config = new(Configuration)

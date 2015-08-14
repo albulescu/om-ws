@@ -4,6 +4,7 @@ import (
 	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -39,11 +40,27 @@ type connection struct {
 func checkOrigin(r *http.Request) bool {
 
 	actualOrigin := r.Header.Get("origin")
+	clientIp := strings.Split(r.RemoteAddr, ":")[0]
+	ipAllowed := true
 
 	log.Print("Checking origin ", actualOrigin, "...")
 
+	if len(config.Allow) > 0 {
+		ipAllowed = false
+		for _, ip := range config.Allow {
+			if ip == clientIp {
+				ipAllowed = true
+				break
+			}
+		}
+	}
+
+	if !ipAllowed {
+		log.Print("Ip ", clientIp, " is not allowed")
+	}
+
 	for _, origin := range config.Origins {
-		if origin == actualOrigin {
+		if origin == actualOrigin && ipAllowed {
 			return true
 		}
 	}

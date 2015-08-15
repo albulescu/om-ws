@@ -16,9 +16,10 @@
         omsocket.on("data", function(packet){
             log(packet);
         });
+        omsocket.on('error', function(error){
+            log('Error:'+error);
+        })
     }
-
-
 
     function log( data ) {
         $('body').append("<div><pre>"+JSON.stringify(data)+"</pre></div>")

@@ -36,7 +36,7 @@ func serveLib(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/javascript; charset=utf-8")
-	t := template.Must(template.ParseFiles("lib.js"))
+	t := template.Must(template.ParseFiles("lib.min.js"))
 
 	data := map[string]string{
 		"version":  strconv.Itoa(PROTOCOL_VERSION),

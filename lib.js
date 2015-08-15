@@ -58,7 +58,7 @@
 
         packet.version = data.getUint8(2);
 
-        if( packet.version !== VERSION ) {
+        if( parseInt(packet.version,10) !== parseInt(VERSION,10) ) {
             throw new Error('Invalid version '+packet.version+' in received packet');
         }
 
@@ -176,7 +176,7 @@
                 trigger('data', decodePacket(event.data));
             }
             catch(e) {
-                trigger('error', 'Fail to decode packet');
+                trigger('error', 'Fail to decode packet:' + e.message);
             }
         }
 

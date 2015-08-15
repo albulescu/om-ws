@@ -161,10 +161,9 @@
     }
 
     function send(action /*number*/, data /*object*/) {
-        if( connected() ) {
+        if( !connected() ) {
             throw new Error('Not connected');
         }
-
         socket.send(encodePacket(action, data));
     }
 

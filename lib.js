@@ -12,6 +12,11 @@
 
 
     var events = {};
+    var socket;
+    var userDisconnected = false;
+    var reconnectInterval;
+    var reconnectCount;
+    var reconnecting=false;
 
     function bind(event, fct){
         events = events || {};
@@ -128,7 +133,7 @@
         data.setUint8(1,109);//m
         data.setUint8(2,VERSION);//version
         data.setUint8(3,action);//action
-        data.setUint32(4,123);//action
+        data.setUint32(4,0);//action
 
         var position=8;
         var addString = function(string) {
@@ -156,41 +161,89 @@
     }
 
     function send(action /*number*/, data /*object*/) {
+        if( connected() ) {
+            throw new Error('Not connected');
+        }
+
         socket.send(encodePacket(action, data));
     }
 
-    var socket = new WebSocket(ENDPOINT);
-    socket.binaryType = 'arraybuffer';
-
-    socket.onopen = function(/*event*/) {
-        trigger('open');
-    };
-
-    socket.onclose = function(/*event*/) {
-        trigger('close');
-    };
-
-    socket.onmessage = function(/*event*/) {
-        if( event.data !== '' ) {
-            try {
-                trigger('data', decodePacket(event.data));
+    function reconnect() {
+        reconnectCount=0;
+        reconnecting=true;
+        reconnectInterval = setInterval(function(){
+            connect();
+            trigger('reconnect', reconnectCount + 1);
+            if( reconnectCount>=2 ) {
+                reconnecting=false;
+                clearInterval(reconnectInterval);
+                trigger('error', 'Fail to reconnect');
             }
-            catch(e) {
-                trigger('error', 'Fail to decode packet:' + e.message);
-            }
+            reconnectCount++;
+        }, 3000);
+    }
+
+    function connect() {
+
+        if( connected() ) {
+            return;
         }
 
-    };
+        socket = new WebSocket(ENDPOINT);
+        socket.binaryType = 'arraybuffer';
+        socket.onopen = onSocketOpen;
+        socket.onclose = onSocketClose;
+        socket.onmessage = onMessageReceived;
+    }
+
+
+    function connected() {
+        return socket && socket.readyState===1;
+    }
+
+    function disconnect() {
+        if( connected ) {
+            userDisconnected=true;
+            socket.close();
+        }
+    }
+
+    function onSocketOpen() {
+        reconnecting=false;
+        userDisconnected=false;
+        clearInterval(reconnectInterval);
+        trigger('connect');
+    }
+
+    function onSocketClose() {
+        trigger('disconnect');
+        if(!userDisconnected && !reconnecting){
+            reconnect();
+        }
+    }
+
+    function onMessageReceived(event) {
+        if( event.data !== '' ) {
+                try {
+                    trigger('data', decodePacket(event.data));
+                }
+                catch(e) {
+                    trigger('error', 'Fail to decode packet:' + e.message);
+                }
+            }
+    }
 
     var api = {
         'on': bind,
         'off': unbind,
         'send': send,
+        'connect': connect,
+        'close': disconnect
     };
 
     Object.defineProperty(api, 'connected', {
         get: function() {
-            return socket.readyState===1;
+            return connected();
         }
     });
 

@@ -18,7 +18,16 @@
         });
         omsocket.on('error', function(error){
             log('Error:'+error);
-        })
+        });
+        omsocket.on('connect',function(){
+            log('Connected!');
+        });
+        omsocket.on('disconnect',function(){
+            log('Disconnected!');
+        });
+        omsocket.on('reconnect', function( no ){
+            log('Reconnect: ' + no)
+        });
     }
 
     function log( data ) {
@@ -29,6 +38,8 @@
         omsocket.send(99, {"a":"b", "x":"10"});
     }
 </script>
+<button onclick="omsocket.connect()" id="send">Connect</button>
+<button onclick="omsocket.close()" id="send">Disconnect</button>
 <button onclick="send()" id="send">Send ArrayBuffer</button>
 </body>
 </html>

@@ -43,7 +43,7 @@ func (h *hub) run() {
 			go log.Print("Broadcast")
 			for c := range h.connections {
 				select {
-				case c.send <- m:
+				case c.sendBinary <- m:
 				default:
 					close(c.send)
 					delete(h.connections, c)

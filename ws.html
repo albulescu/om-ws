@@ -116,6 +116,52 @@
     } else {
         log("Your browser does not support WebSockets.")
     }
+
+    function getPacket(action, body) {
+
+        var buffer = new ArrayBuffer(512);
+        var data = new DataView(buffer);
+
+        data.setUint8(0,111);//o
+        data.setUint8(1,109);//m
+        data.setUint8(2,1);//version
+        data.setUint8(3,action);//action
+        data.setUint32(4,123);//action
+
+        var position=8;
+        var addString = function(string) {
+            for (var i = 0; i < string.length; i++) {
+                data.setUint8(position, string[i].charCodeAt(0));
+                position++;
+            }
+        };
+
+        var addSeparator = function() {
+            data.setUint8(position,0xc0);
+            position++;
+            data.setUint8(position,0x80);
+            position++;
+        };
+
+        for(var key in body) {
+            addString(key);
+            addSeparator();
+            addString(body[key]+"");
+            addSeparator();
+        }
+
+        return data.buffer;
+    }
+
+    function send(m) {
+        if(m){
+            return socket.send(m);
+        }
+
+        socket.send( getPacket(99, {"a":"b", "x":"10"}) )
+    }
 </script>
+<button onclick="send()" id="send">Send ArrayBuffer</button>
+<button onclick="send('Hi')" id="send">Send String</button>
 </body>
 </html>

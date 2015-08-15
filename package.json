@@ -1,0 +1,21 @@
+{
+  "name": "omws",
+  "version": "1.0.0",
+  "description": "make install make run ## Communication protocol Full packet ``` [                     Header                       ] [         body         ] [\"om\"][version:uint8][action:uint8][bodysize:uint32] [....:map[string]string] ``` Body packet - Key value pairs separated by [0xc0,0x80] ``` [key:string][0xc0,0x80][value:string][0xc0,0x80] ```",
+  "main": "Gruntfile.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@albulescu.ro:om/websocket.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "grunt": "^0.4.5",
+    "grunt-contrib-jshint": "^0.11.2",
+    "grunt-contrib-nodeunit": "^0.4.1",
+    "grunt-contrib-uglify": "^0.9.1"
+  }
+}

@@ -3,7 +3,12 @@ package main
 import (
 	"log"
 	"net/http"
+	"strconv"
 	"text/template"
+)
+
+const (
+	PROTOCOL_VERSION int = 1
 )
 
 func serveHome(w http.ResponseWriter, r *http.Request) {
@@ -19,6 +24,28 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
 	template.Must(template.ParseFiles("ws.html")).Execute(w, r.Host)
 }
 
+func serveLib(w http.ResponseWriter, r *http.Request) {
+
+	if r.URL.Path != "/lib" {
+		http.Error(w, "Not found", 404)
+		return
+	}
+	if r.Method != "GET" {
+		http.Error(w, "Method not allowed", 405)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/javascript; charset=utf-8")
+	t := template.Must(template.ParseFiles("lib.js"))
+
+	data := map[string]string{
+		"version":  strconv.Itoa(PROTOCOL_VERSION),
+		"endpoint": r.Host,
+	}
+
+	t.Execute(w, data)
+}
+
 func main() {
 
 	//load settings from ini and params
@@ -27,6 +54,7 @@ func main() {
 	go h.run()
 
 	http.HandleFunc("/test", serveHome)
+	http.HandleFunc("/lib", serveLib)
 	http.HandleFunc("/", serveWs)
 
 	log.Print("Listen on ", config.BindAddress)

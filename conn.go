@@ -80,13 +80,22 @@ func (c *connection) readPump() {
 	c.ws.SetReadDeadline(time.Now().Add(pongWait))
 	c.ws.SetPongHandler(func(string) error { c.ws.SetReadDeadline(time.Now().Add(pongWait)); return nil })
 	for {
-		_, message, err := c.ws.ReadMessage()
+		mtype, message, err := c.ws.ReadMessage()
 		if err != nil {
 			break
 		}
-		//validate
-		//build the packet
-		h.broadcast <- message
+
+		if mtype == 2 {
+
+			packet, err := ReadPacket(message)
+
+			if err != nil {
+				log.Print("Fail to read binary packet")
+				break
+			}
+
+			Execute(c, packet)
+		}
 	}
 }
 
@@ -144,8 +153,6 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 	}
 	c := &connection{send: make(chan []byte, 256), ws: ws, sendBinary: make(chan []byte, 256)}
 	h.register <- c
-
-	go ActionPing(c)
 
 	go c.writePump()
 	c.readPump()

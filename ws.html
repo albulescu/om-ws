@@ -8,6 +8,8 @@
 <body>
 <script type="text/javascript">
 
+    var ACTION_PING = 10;
+
     /**
      * This function is called only for <script> async mode
      */
@@ -28,18 +30,21 @@
         omsocket.on('reconnect', function( no ){
             log('Reconnect: ' + no)
         });
+        omsocket.connect();
     }
 
     function log( data ) {
         $('body').append("<div><pre>"+JSON.stringify(data)+"</pre></div>")
     }
 
-    function send() {
-        omsocket.send(99, {"a":"b", "x":"10"});
+    function ping() {
+        var data = {"a":"b"};
+        log(data)
+        omsocket.send(ACTION_PING,data);
     }
 </script>
 <button onclick="omsocket.connect()" id="send">Connect</button>
-<button onclick="omsocket.close()" id="send">Disconnect</button>
-<button onclick="send()" id="send">Send ArrayBuffer</button>
+<button onclick="omsocket.close()" id="send">Disconnect</button><br/>
+<button onclick="ping()" id="send">Send ArrayBuffer</button>
 </body>
 </html>

@@ -67,11 +67,11 @@
             throw new Error('Invalid version '+packet.version+' in received packet');
         }
 
-        packet.action  = data.getUint8(3);
-        packet.size    = data.getUint32(4);
+        packet.action  = data.getUint16(3);
+        packet.size    = data.getUint32(5);
         packet.data    = {};
 
-        var body = new Uint8Array(buffer.slice(8, buffer.byteLength));
+        var body = new Uint8Array(buffer.slice(9, buffer.byteLength));
 
         var setValue = function(key, value) {
 
@@ -128,14 +128,22 @@
 
         var buffer = new ArrayBuffer(512);
         var data = new DataView(buffer);
+        var key;
 
         data.setUint8(0,111);//o
         data.setUint8(1,109);//m
         data.setUint8(2,VERSION);//version
-        data.setUint8(3,action);//action
-        data.setUint32(4,0);//action
+        data.setUint16(3,action);//action
 
-        var position=8;
+
+        var size=0;
+        for(key in body) {
+            size+=(key.length + body[key].length + 4);
+        }
+
+        data.setUint32(5,size);//size
+
+        var position=9;
         var addString = function(string) {
             for (var i = 0; i < string.length; i++) {
                 data.setUint8(position, string[i].charCodeAt(0));
@@ -150,7 +158,7 @@
             position++;
         };
 
-        for(var key in body) {
+        for(key in body) {
             addString(key);
             addSeparator();
             addString(body[key]+'');
@@ -201,7 +209,7 @@
     }
 
     function disconnect() {
-        if( connected ) {
+        if( connected() ) {
             userDisconnected=true;
             socket.close();
         }

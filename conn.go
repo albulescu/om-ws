@@ -61,6 +61,10 @@ func checkOrigin(r *http.Request) bool {
 		log.Print("Ip ", clientIp, " is not allowed")
 	}
 
+	if len(config.Origins) == 0 && ipAllowed {
+		return true
+	}
+
 	for _, origin := range config.Origins {
 		if origin == actualOrigin && ipAllowed {
 			return true

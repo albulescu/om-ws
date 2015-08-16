@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"strconv"
 )
 
 var (
@@ -19,12 +20,63 @@ func (e *errorString) Error() string {
 	return e.s
 }
 
+type PacketData struct {
+	Map map[string]string
+}
+
+func (p *PacketData) Get(key string) (string, error) {
+
+	if p.Has(key) {
+		return p.Map[key], nil
+	}
+
+	return "", &errorString{fmt.Sprintf("No data with key %s", key)}
+}
+
+func (p *PacketData) Set(key string, value string) error {
+
+	if p.Has(key) {
+		return &errorString{fmt.Sprintf("Key %s already exist", key)}
+	}
+
+	p.Map[key] = value
+
+	return nil
+}
+
+func (p *PacketData) Has(key string) bool {
+	if _, ok := p.Map[key]; ok {
+		return true
+	}
+	return false
+}
+
+func (p *PacketData) GetInt(key string) (int64, error) {
+
+	if p.Has(key) {
+		value, _ := p.Get(key)
+		return strconv.ParseInt(value, 10, 8)
+	}
+
+	return 0, &errorString{fmt.Sprintf("No data with key %s", key)}
+}
+
+func (p *PacketData) GetBool(key string) (bool, error) {
+
+	if p.Has(key) {
+		value, _ := p.Get(key)
+		return (value == "true" || value == "1"), nil
+	}
+
+	return false, &errorString{fmt.Sprintf("No data with key %s", key)}
+}
+
 type Packet struct {
 	Control [2]byte
 	Version uint8
 	Action  uint16
 	Size    uint32
-	Data    map[string]string
+	Data    PacketData
 }
 
 func (p *Packet) String() string {
@@ -32,10 +84,7 @@ func (p *Packet) String() string {
 }
 
 func (p *Packet) Get(key string) (string, error) {
-	if value, ok := p.Data[key]; ok {
-		return value, nil
-	}
-	return "", &errorString{fmt.Sprintf("No data with key %s", key)}
+	return p.Data.Get(key)
 }
 
 func ScanBody(data []byte, atEOF bool) (advance int, token []byte, err error) {
@@ -44,7 +93,7 @@ func ScanBody(data []byte, atEOF bool) (advance int, token []byte, err error) {
 
 	for i := 0; i < length; i++ {
 		if data[i] == 0xc0 && data[i+1] == 0x80 {
-			return i + 2, data[i-1 : i], nil
+			return i + 2, data[0:i], nil
 		}
 	}
 
@@ -84,7 +133,7 @@ func ReadPacket(b []byte) (Packet, error) {
 		toggle = !toggle
 	}
 
-	p.Data = data
+	p.Data.Map = data
 
 	return p, nil
 }

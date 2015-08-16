@@ -10,11 +10,17 @@ const (
 	ACTION_PING           uint16 = 10
 )
 
-var actions = map[uint16]func(c *connection, packet Packet){
+type Action func(c *connection, data PacketData)
+
+var actions = map[uint16]Action{
 	ACTION_PING: ActionPing,
 }
 
-func ActionPing(c *connection, packet Packet) {
+func Auth(c *connection, data PacketData) {
+
+}
+
+func ActionPing(c *connection, data PacketData) {
 	c.sendBinary <- CreatePacket(ACTION_PING, map[string]string{
 		"time": string(time.Now().String()),
 	})
@@ -23,7 +29,7 @@ func ActionPing(c *connection, packet Packet) {
 func Execute(c *connection, packet Packet) {
 
 	if fn, ok := actions[packet.Action]; ok {
-		fn(c, packet)
+		fn(c, packet.Data)
 		return
 	}
 

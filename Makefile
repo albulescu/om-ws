@@ -9,5 +9,9 @@ install:
 	go get github.com/stretchr/testify/assert
 
 build:
-	go build -o $(GOPATH)/bin/osx-omws main.go;
-	GOOS=linux GOARCH=386 CGO_ENABLED=0 go build -o $(GOPATH)/bin/omws main.go;
+	go build -o $(GOPATH)/bin/osx-omws *.go;
+	GOOS=linux GOARCH=386 CGO_ENABLED=0 go build -o $(GOPATH)/bin/omws *.go;
+
+release:
+	make build;
+	echo "Release"

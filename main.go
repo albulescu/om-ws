@@ -46,6 +46,24 @@ func serveLib(w http.ResponseWriter, r *http.Request) {
 	t.Execute(w, data)
 }
 
+func serveEvents(w http.ResponseWriter, r *http.Request) {
+
+	if r.URL.Path != "/event" {
+		http.Error(w, "Not found", 404)
+		return
+	}
+
+	if r.Method != "POST" {
+		http.Error(w, "Method not allowed", 405)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+
+	w.Write([]byte("{\"time\":1}"))
+
+}
+
 func main() {
 
 	//load settings from ini and params
@@ -55,6 +73,7 @@ func main() {
 
 	http.HandleFunc("/test", serveHome)
 	http.HandleFunc("/lib", serveLib)
+	http.HandleFunc("/event", serveEvents)
 	http.HandleFunc("/", serveWs)
 
 	log.Print("Listen on ", config.BindAddress)
